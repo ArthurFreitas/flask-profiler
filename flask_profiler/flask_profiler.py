@@ -119,15 +119,20 @@ def measure(f, name, method, context=None):
 
     return wrapper
 
-
+def decode_data(requestbytes):
+    try:
+        return requestbytes.decode("utf-8", "strict")
+    except UnicodeDecodeError:
+        return requestbytes.decode("latin1", "strict")
+    
 def wrapHttpEndpoint(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         context = {
             "url": request.base_url,
             "args": dict(request.args.items()),
-            "form": dict(request.form.items()),
-            "body": request.data.decode("utf-8", "strict"),
+            "form": dict(request.form.items()),            
+            "body": decode_data(request.data),
             "headers": dict(request.headers.items()),
             "func": request.endpoint,
             "ip": request.remote_addr
